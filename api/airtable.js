@@ -1,31 +1,35 @@
-// /api/airtable.js
-export default async function handler(req, res) {
+import { NextResponse } from 'next/server';
+
+export async function GET() {
+  const token = process.env.AIRTABLE_API_KEY;
   const baseId = process.env.AIRTABLE_BASE_ID;
   const tableName = process.env.AIRTABLE_TABLE_NAME;
-  const apiKey = process.env.AIRTABLE_API_KEY;
 
-  const url = `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableName)}?pageSize=100&sort[0][field]=Placement&sort[0][direction]=asc`;
+  const url = `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableName)}`;
+
+  let records = [];
+  let offset = '';
 
   try {
-    const airtableResponse = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-      },
-    });
+    do {
+      const res = await fetch(`${url}${offset ? `?offset=${offset}` : ''}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-    if (!airtableResponse.ok) {
-      const errorBody = await airtableResponse.text();
-      throw new Error(`Airtable API error: ${errorBody}`);
-    }
+      if (!res.ok) {
+        throw new Error(`Airtable API error: ${res.statusText}`);
+      }
 
-    const data = await airtableResponse.json();
+      const data = await res.json();
+      records.push(...data.records.map(r => r.fields));
+      offset = data.offset || '';
 
-    // Extract just the fields
-    const records = data.records.map(record => record.fields);
+    } while (offset);
 
-    res.status(200).json(records);
+    return NextResponse.json(records);
   } catch (error) {
-    console.error("Proxy error:", error.message);
-    res.status(500).json({ error: error.message });
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
