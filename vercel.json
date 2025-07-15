@@ -1,5 +1,10 @@
+// === FILE: vercel.json ===
 {
   "version": 2,
-  "builds": [{ "src": "api/airtable.js", "use": "@vercel/node" }],
-  "routes": [{ "src": "/api/airtable", "dest": "api/airtable.js" }]
+  "builds": [
+    { "src": "api/airtable.js", "use": "@vercel/node" }
+  ],
+  "routes": [
+    { "src": "/api/airtable", "dest": "api/airtable.js" }
+  ]
 }
