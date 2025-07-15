@@ -1,32 +1,31 @@
-// api/airtable.js
+// /api/airtable.js
 export default async function handler(req, res) {
-  const token = process.env.AIRTABLE_API_KEY;
-  const baseId = 'appWbzilqayDuWDhi';
-  const tableName = 'Imported table';
-
-
+  const baseId = process.env.AIRTABLE_BASE_ID;
+  const tableName = process.env.AIRTABLE_TABLE_NAME;
+  const apiKey = process.env.AIRTABLE_API_KEY;
 
   const url = `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableName)}?pageSize=100&sort[0][field]=Placement&sort[0][direction]=asc`;
 
   try {
-    const response = await fetch(url, {
+    const airtableResponse = await fetch(url, {
       headers: {
-        Authorization: `Bearer ${apiKey}`
-      }
+        Authorization: `Bearer ${apiKey}`,
+      },
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Error from Airtable:', errorText);
-      return res.status(500).json({ error: errorText });
+    if (!airtableResponse.ok) {
+      const errorBody = await airtableResponse.text();
+      throw new Error(`Airtable API error: ${errorBody}`);
     }
 
-    const data = await response.json();
-    const formatted = data.records.map(r => r.fields);
+    const data = await airtableResponse.json();
 
-    res.status(200).json(formatted);
-  } catch (err) {
-    console.error('Proxy Error:', err);
-    res.status(500).json({ error: 'Internal Server Error' });
+    // Extract just the fields
+    const records = data.records.map(record => record.fields);
+
+    res.status(200).json(records);
+  } catch (error) {
+    console.error("Proxy error:", error.message);
+    res.status(500).json({ error: error.message });
   }
 }
