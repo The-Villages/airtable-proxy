@@ -5,7 +5,7 @@ export default async function handler(req, res) {
   const baseId = 'appWbzilqayDuWDhi';
   const tableName = 'Imported table';
 
-  let url = `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableName)}?pageSize=100`;
+  let url = `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableName)}?pageSize=100&sort[0][field]=Placement&sort[0][direction]=asc`;
   let allRecords = [];
 
   try {
