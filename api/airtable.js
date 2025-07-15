@@ -1,7 +1,7 @@
 export default async function handler(req, res) {
   const apiKey = process.env.AIRTABLE_TOKEN;
-  const baseId = "appWbzilqayDuWDhi";
-  const tableName = "Villages Key Tracker";
+  const baseId = process.env.AIRTABLE_BASE_ID;
+  const tableName = process.env.AIRTABLE_TABLE_NAME;
 
   let records = [];
   let offset = null;
