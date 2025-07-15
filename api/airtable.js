@@ -1,24 +1,28 @@
+// api/airtable.js
+
 export default async function handler(req, res) {
-  const token = "patd2ctkR4bsBQCm2.39c9a83458cc16080e6292ce147df431b90b9f676b2e68de4034fbdf6f91320f";
-  const baseId = "appWbzilqayDuWDhi";
-  const tableName = "Imported table"; // Adjust if you've renamed it
-  const url = `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableName)}?maxRecords=500&view=Grid%20view`;
+  const airtableToken = 'patd2ctkR4bsBQCm2.39c9a83458cc16080e6292ce147df431b90b9f676b2e68de4034fbdf6f91320f';
+  const baseId = 'appWbzilqayDuWDhi';
+  const tableName = 'Imported table';
+
+  const url = `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableName)}?maxRecords=1000`;
 
   try {
-    const airtableRes = await fetch(url, {
+    const response = await fetch(url, {
       headers: {
-        Authorization: `Bearer ${token}`
+        Authorization: `Bearer ${airtableToken}`,
+        'Content-Type': 'application/json'
       }
     });
 
-    if (!airtableRes.ok) {
-      throw new Error(`Airtable error: ${airtableRes.status}`);
+    if (!response.ok) {
+      return res.status(response.status).json({ error: await response.text() });
     }
 
-    const data = await airtableRes.json();
-    const formatted = data.records.map(r => r.fields);
-    res.status(200).json(formatted);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    const data = await response.json();
+    const records = data.records.map(record => record.fields);
+    res.status(200).json(records);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 }
