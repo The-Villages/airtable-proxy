@@ -1,8 +1,9 @@
 // api/airtable.js
 export default async function handler(req, res) {
-  const apiKey = process.env.AIRTABLE_API_KEY;
-  const baseId = process.env.AIRTABLE_BASE_ID;
-  const tableName = process.env.AIRTABLE_TABLE_NAME;
+  const token = process.env.AIRTABLE_API_KEY;
+  const baseId = 'appWbzilqayDuWDhi';
+  const tableName = 'Villages Key Tracker'; // Must match Airtable exactly
+
 
   const url = `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableName)}?pageSize=100&sort[0][field]=Placement&sort[0][direction]=asc`;
 
