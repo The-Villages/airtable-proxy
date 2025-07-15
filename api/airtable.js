@@ -1,15 +1,17 @@
-// /api/airtable.js
-
 export default async function handler(req, res) {
-  const airtableToken = 'patd2ctkR4bsBQCm2.39c9a83458cc16080e6292ce147df431b90b9f676b2e68de4034fbdf6f91320f';
-  const baseId = 'appWbzilqayDuWDhi';
-  const tableName = 'Imported table';
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
 
-  let url = `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableName)}?pageSize=100&sort[0][field]=Placement&sort[0][direction]=asc`;
-  let allRecords = [];
+  const airtableToken = 'patuJ8KmzLqa8gSkg.d29bbf048bb5d11044dcd289d23fbb403ac7a8c871d2a40d0df666feecbfb12b';
+  const baseId = 'appErm2taGSSBKmNd';
+  const tableName = '1';
+
+  const allRecords = [];
+  let offset = '';
 
   try {
-    while (url) {
+    do {
+      const url = `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableName)}?pageSize=100&sort[0][field]=Placement&sort[0][direction]=asc${offset ? `&offset=${offset}` : ''}`;
       const response = await fetch(url, {
         headers: {
           Authorization: `Bearer ${airtableToken}`,
@@ -18,23 +20,17 @@ export default async function handler(req, res) {
       });
 
       if (!response.ok) {
-        return res.status(response.status).json({ error: await response.text() });
+        throw new Error(`Airtable error: ${response.statusText}`);
       }
 
       const data = await response.json();
-      allRecords.push(...data.records);
+      allRecords.push(...data.records.map(record => record.fields));
+      offset = data.offset;
+    } while (offset);
 
-      // Handle pagination
-      if (data.offset) {
-        url = `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableName)}?pageSize=100&offset=${data.offset}`;
-      } else {
-        url = null;
-      }
-    }
-
-    const formatted = allRecords.map(record => record.fields);
-    res.status(200).json(formatted);
+    res.status(200).json(allRecords);
   } catch (error) {
+    console.error('Proxy fetch error:', error);
     res.status(500).json({ error: error.message });
   }
 }
